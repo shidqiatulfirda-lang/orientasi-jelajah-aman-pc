@@ -129,6 +129,16 @@ export default function HalamanUtama() {
        </Text>
          </View>
      )}
+     {kualitasUdara && (
+      <View>
+      <Text>
+        PM2.5: {kualitasUdara.pm25} µg/m³
+      </Text>
+      <Text>
+        PM10: {kualitasUdara.pm10} µg/m³
+      </Text>
+      </View>
+    )}
       <AtribusiCuaca /> 
     </SafeAreaView> 
   ); 
