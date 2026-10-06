@@ -24,16 +24,26 @@ export default function HalamanUtama() {
   const [sedangMemuat, setSedangMemuat] = useState(false); 
   const [pesanError, setPesanError] = useState<string | null>(null); 
  
-  const teksTertunda = useDebounce(teksCari, 500); 
+  const teksTertunda = useDebounce(teksCari, 800); 
   const requestIdRef = useRef(0); // pencegah race condition 
  
-  useEffect(() => { 
-    if (teksTertunda.trim().length === 0) { 
-      setHasilPencarian([]); 
-      return; 
-    } 
-    cariKota(teksTertunda).then(setHasilPencarian).catch(() => setHasilPencarian([])); 
-  }, [teksTertunda]); 
+ useEffect(() => {
+  setPesanError(null);
+  setCuaca(null);
+  setKualitasUdara(null);
+
+  if (teksTertunda.trim().length === 0) {
+    setHasilPencarian([]);
+    return;
+  }
+
+  cariKota(teksTertunda)
+    .then(setHasilPencarian)
+    .catch(() => {
+      setHasilPencarian([]);
+      setPesanError("Gagal mencari kota. Periksa koneksi internet Anda.");
+    });
+}, [teksTertunda]);
  
   async function pilihKota(kota: HasilGeocoding) { 
     setKotaTerpilih(kota); 
@@ -41,24 +51,34 @@ export default function HalamanUtama() {
     setSedangMemuat(true); 
     setPesanError(null); 
  
-    try { 
-      const [dataCuaca, dataAQI] = await Promise.all([ 
-        ambilCuaca(kota.latitude, kota.longitude), 
-        ambilKualitasUdara(kota.latitude, kota.longitude), 
-      ]); 
- 
-      if (idSaatIni !== requestIdRef.current) return; // hasil basi, abaikan 
- 
-      setCuaca(dataCuaca); 
-      setKualitasUdara(dataAQI); 
-    } catch (err) { 
+    try {
+  //console.log("CEK ambilCuaca:", typeof ambilCuaca);
+  //console.log("CEK ambilKualitasUdara:", typeof ambilKualitasUdara);
+
+  const [dataCuaca, dataAQI] = await Promise.all([
+    ambilCuaca(kota.latitude, kota.longitude),
+    ambilKualitasUdara(kota.latitude, kota.longitude),
+  ]);
+
+  if (idSaatIni !== requestIdRef.current) return;
+
+  setCuaca(dataCuaca);
+  setKualitasUdara(dataAQI);
+}
+    catch (err) { 
+      //console.error("ERROR DATA CUACA:", err);
       if (idSaatIni !== requestIdRef.current) return; 
       setPesanError("Gagal memuat data cuaca. Periksa koneksi internet Anda."); 
+      
     } finally { 
       if (idSaatIni === requestIdRef.current) setSedangMemuat(false); 
     } 
   } 
- 
+  function cobaLagi() {
+  if (!kotaTerpilih) return;
+
+  pilihKota(kotaTerpilih);
+}
   return ( 
     <SafeAreaView style={{ flex: 1, padding: 16, gap: 16 }}> 
       <SearchBox onCari={setTeksCari} /> 
@@ -75,9 +95,12 @@ export default function HalamanUtama() {
         <View> 
           <Text>{pesanError}</Text> 
           <Button 
-            title="Coba Lagi" 
-            onPress={() => kotaTerpilih && pilihKota(kotaTerpilih)} 
-          /> 
+          //  title="Coba Lagi" 
+          //  onPress={() => kotaTerpilih && pilihKota(kotaTerpilih)}  /> 
+          
+           title="Coba Lagi"
+           onPress={cobaLagi}
+          />
         </View> 
       )} 
  
@@ -93,10 +116,19 @@ export default function HalamanUtama() {
       {cuaca && ( 
         <Text style={{ fontSize: 12, color: "#888" }}> 
           Kondisi: {labelKodeCuaca(cuaca.saatIni.kodeCuaca)} • Angin 
-{cuaca.saatIni.kecepatanAngin} km/j 
+      {cuaca.saatIni.kecepatanAngin} km/j 
         </Text> 
       )} 
- 
+      {cuaca && (
+       <View>
+       <Text>
+          Suhu maksimum hari ini: {cuaca.harian.suhuMaksimal[0]}°C
+       </Text>
+       <Text>
+          Suhu minimum hari ini: {cuaca.harian.suhuMinimal[0]}°C
+       </Text>
+         </View>
+     )}
       <AtribusiCuaca /> 
     </SafeAreaView> 
   ); 

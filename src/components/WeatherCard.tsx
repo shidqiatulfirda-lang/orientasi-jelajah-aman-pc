@@ -2,14 +2,14 @@
 import { Text, View } from "react-native";
 import { TingkatAQI, WeatherCardProps } from "../../types/cuaca";
 import { spacing, typeScale } from "../constants/styles";
- 
+
 const warnaPerTingkat: Record<TingkatAQI, string> = { 
   BAIK: "green", 
   SEDANG: "goldenrod", 
   TIDAK_SEHAT: "orange", 
   BERBAHAYA: "crimson", 
 }; 
- 
+
 export default function WeatherCard({ 
   kota, 
   suhu, 
@@ -26,7 +26,7 @@ export default function WeatherCard({
       ? `Cuaca ${kota}, suhu ${suhu} derajat, indeks kualitas udara ${indeksAQI}, kategori 
 ${tingkatAQI}` 
       : `Cuaca ${kota}, suhu ${suhu} derajat, kualitas udara ${tingkatAQI}`; 
- 
+
   return ( 
     <View 
       accessible 
