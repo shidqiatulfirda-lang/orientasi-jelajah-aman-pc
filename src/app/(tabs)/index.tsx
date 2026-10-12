@@ -2,6 +2,8 @@
 import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Button, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { router } from "expo-router";
+
  
 import { HasilGeocoding } from "../../../types/geocoding";
 import { DataCuacaLengkap, DataKualitasUdara } from "../../../types/weather";
@@ -14,6 +16,7 @@ import { ambilKualitasUdara } from "../../services/airQualityService";
 import { cariKota } from "../../services/geocodingService";
 import { konversiTingkatAQI } from "../../services/weatherAdapter";
 import { ambilCuaca } from "../../services/weatherService";
+import { mintaIzinLokasi, ambilKoordinatSaatIni } from "../../services/locationService"; 
  
 export default function HalamanUtama() { 
   const [teksCari, setTeksCari] = useState(""); 
@@ -23,9 +26,11 @@ export default function HalamanUtama() {
   const [kualitasUdara, setKualitasUdara] = useState<DataKualitasUdara | null>(null); 
   const [sedangMemuat, setSedangMemuat] = useState(false); 
   const [pesanError, setPesanError] = useState<string | null>(null); 
+  const [pesanLokasi, setPesanLokasi] = useState<string | null>(null);
  
   const teksTertunda = useDebounce(teksCari, 800); 
   const requestIdRef = useRef(0); // pencegah race condition 
+
  
  useEffect(() => {
   setPesanError(null);
@@ -90,7 +95,6 @@ export default function HalamanUtama() {
       ))} 
  
       {sedangMemuat && <ActivityIndicator />} 
- 
       {pesanError && ( 
         <View> 
           <Text>{pesanError}</Text> 
@@ -103,7 +107,6 @@ export default function HalamanUtama() {
           />
         </View> 
       )} 
- 
       {cuaca && kualitasUdara && kotaTerpilih && !sedangMemuat && ( 
         <WeatherCard 
           kota={kotaTerpilih.name} 
@@ -112,7 +115,6 @@ export default function HalamanUtama() {
           indeksAQI={kualitasUdara.indeksAQI} 
         /> 
       )} 
- 
       {cuaca && ( 
         <Text style={{ fontSize: 12, color: "#888" }}> 
           Kondisi: {labelKodeCuaca(cuaca.saatIni.kodeCuaca)} • Angin 
@@ -139,7 +141,30 @@ export default function HalamanUtama() {
       </Text>
       </View>
     )}
+    <Button title="Gunakan Lokasi Saat Ini" onPress={gunakanLokasiSaatIni} /> 
+      {pesanLokasi && <Text>{pesanLokasi}</Text>}
       <AtribusiCuaca /> 
     </SafeAreaView> 
   ); 
-} 
+
+  async function gunakanLokasiSaatIni() { 
+  const status = await mintaIzinLokasi(); 
+  if (status === "denied") { 
+    setPesanLokasi("Izin lokasi ditolak. Silakan cari kota secara manual di atas."); 
+    return; 
+  } 
+  if (status === "unavailable") { 
+    setPesanLokasi("Layanan lokasi tidak aktif di perangkat ini. Silakan cari kota secara manual."); 
+    return; 
+  } 
+  setPesanLokasi(null); 
+  const koordinat = await ambilKoordinatSaatIni(); 
+  pilihKota({ 
+    id: -1, 
+    name: "Lokasi Saat Ini", 
+    latitude: koordinat.latitude, 
+    longitude: koordinat.longitude, 
+    country: "", 
+  });
+  }
+}
