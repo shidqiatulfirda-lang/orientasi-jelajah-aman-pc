@@ -4,6 +4,7 @@ import { ActivityIndicator, Button, Text, TouchableOpacity, View } from "react-n
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 
+
  
 import { HasilGeocoding } from "../../../types/geocoding";
 import { DataCuacaLengkap, DataKualitasUdara } from "../../../types/weather";
@@ -108,12 +109,27 @@ export default function HalamanUtama() {
         </View> 
       )} 
       {cuaca && kualitasUdara && kotaTerpilih && !sedangMemuat && ( 
-        <WeatherCard 
-          kota={kotaTerpilih.name} 
-          suhu={cuaca.saatIni.suhu} 
-          tingkatAQI={konversiTingkatAQI(kualitasUdara.indeksAQI)} 
-          indeksAQI={kualitasUdara.indeksAQI} 
+      <>
+      <WeatherCard 
+       kota={kotaTerpilih.name} 
+       suhu={cuaca.saatIni.suhu} 
+       tingkatAQI={konversiTingkatAQI(kualitasUdara.indeksAQI)} 
+      /> 
+      <Button 
+       title="Tambahkan ke Favorit" 
+       onPress={() => 
+        router.push({ 
+          pathname: "/tambah-favorit", 
+          params: { 
+            id: String(kotaTerpilih.id), 
+            nama: kotaTerpilih.name, 
+            lat: String(kotaTerpilih.latitude), 
+            lon: String(kotaTerpilih.longitude), 
+          }, 
+          }) 
+         } 
         /> 
+       </> 
       )} 
       {cuaca && ( 
         <Text style={{ fontSize: 12, color: "#888" }}> 
