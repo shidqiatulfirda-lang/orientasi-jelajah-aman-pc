@@ -79,7 +79,6 @@ export default function HalamanUtama() {
     const idSaatIni = ++requestIdRef.current; 
     setSedangMemuat(true); 
     setPesanError(null); 
-  
     try { 
       const data = await ambilCuacaOfflineFirst( 
         { id: kota.id, nama: kota.name, latitude: kota.latitude, longitude: kota.longitude }, 
@@ -160,9 +159,7 @@ export default function HalamanUtama() {
          ))} 
           </View> 
         )} 
-  
         {sedangMemuat && <ActivityIndicator />} 
-  
         {pesanError && ( 
           <View> 
             <Text accessibilityLabel={pesanError}>{pesanError}</Text> 
