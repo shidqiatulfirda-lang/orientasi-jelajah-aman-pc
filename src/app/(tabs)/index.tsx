@@ -186,7 +186,7 @@ export default function HalamanUtama() {
               title="Perbarui Sekarang" 
               onPress={() => pilihKota(kotaTerpilih, true)} 
             /> 
-            // edit by me bcs daftar favorit biar ngga keulang
+            {/*edit by me bcs daftar favorit biar ngga keulang*/}
             {!daftarFavorit.some(
              (kota) => kota.id === kotaTerpilih.id
               ) && (
