@@ -10,6 +10,8 @@ import {
 } from "react-native"; 
 import { SafeAreaView } from "react-native-safe-area-context"; 
 import { router } from "expo-router"; 
+import { useLocalSearchParams } from "expo-router";
+import { simpanRiwayat } from "../../services/riwayatStorage";
   
 import SearchBox from "../../components/SearchBox"; 
 import WeatherCard from "../../components/WeatherCard"; 
@@ -17,10 +19,8 @@ import AtribusiCuaca from "../../components/AtribusiCuaca";
 import StatusData from "../../components/StatusData"; 
 import { useDebounce } from "../../hooks/use-debounce"; 
 import { cariKota } from "../../services/geocodingService"; 
-import { ambilCuacaOfflineFirst, BATAS_CACHE_MS } from 
-"../../services/cuacaRepository"; 
-import { bersihkanCacheLama, daftarKotaTersimpan } from 
-"../../services/cacheRepository"; 
+import { ambilCuacaOfflineFirst, BATAS_CACHE_MS } from "../../services/cuacaRepository"; 
+import { bersihkanCacheLama, daftarKotaTersimpan } from "../../services/cacheRepository"; 
 import { mintaIzinLokasi, ambilKoordinatSaatIni } from "../../services/locationService"; 
 import { konversiTingkatAQI } from "../../services/weatherAdapter"; 
 import { labelKodeCuaca } from "../../constants/weatherCodes"; 
@@ -76,6 +76,15 @@ export default function HalamanUtama() {
 
   async function pilihKota(kota: HasilGeocoding, paksaPerbarui = false) { 
     setKotaTerpilih(kota); 
+    if (kota.id !== -1) {
+    simpanRiwayat({
+      id: kota.id,
+      nama: kota.name,
+      latitude: kota.latitude,
+      longitude: kota.longitude,
+      country: kota.country,
+      }).catch(() => {});
+      }
     const idSaatIni = ++requestIdRef.current; 
     setSedangMemuat(true); 
     setPesanError(null); 
